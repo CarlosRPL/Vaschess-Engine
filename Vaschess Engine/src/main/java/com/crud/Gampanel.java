@@ -143,6 +143,8 @@ private synchronized boolean hasValidMoves(boolean checkIfKingIsSafe) {
     }
 
     public void setPieces() {
+        wking = null; bking = null; 
+        wking = new King('w', 3, 7); bking = new King('b', 3, 0);
         for (int i = 0; i < 8; i++) {
             pieces.add(new Pawn('w', i, 6));
         }
