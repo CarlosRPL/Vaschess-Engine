@@ -4,7 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 
-    public class Piece {
+    public class Piece implements Cloneable {
     public Tipo type;
     public BufferedImage image;
     public int x,y;
@@ -63,6 +63,7 @@ public BufferedImage getImage(String imagePath) {
         if (type==Tipo.PAWN) {
            if (Math.abs(lin-prelin)==2){duascasas=true;}
         }
+        Gampanel.updateMatrix(this);
         x=getX(col);
         y=getY(lin);
         precol=getCol(x);
@@ -196,4 +197,13 @@ public BufferedImage getImage(String imagePath) {
         g2.drawImage(image, x, y, Board.SQUARE_SIZE,Board.SQUARE_SIZE, null);
         
     }
+      @Override
+    public Piece clone() {
+        try {
+            return (Piece) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(); // Isso nunca deve acontecer, já que implementamos Cloneable
+        }
+    }
 }
+

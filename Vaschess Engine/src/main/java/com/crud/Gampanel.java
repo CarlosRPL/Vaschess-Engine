@@ -1,18 +1,17 @@
 package com.crud;
-import java.util.Iterator;
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.*;
 import javax.swing.JPanel;
-
 public class Gampanel extends JPanel implements Runnable {
     public static final int WIDTH = 600;
     public static final int HEIGHT = 600;
     final int FPS = 60;
     public char currentCollor = 'w';
     Thread gameThread;
+    Bot vaschess = new Bot();
     Board board = new Board();
+    public static char[][] Metajogo;
     Mouse mouse = new Mouse();
-    
     // As peças
     public static ArrayList<Piece> pieces = new ArrayList<>();
     public static ArrayList<Piece> simpieces = new ArrayList<>();
@@ -20,11 +19,9 @@ public class Gampanel extends JPanel implements Runnable {
     Piece activeP;
     boolean movimentovalido = false, promotion = false;
     public static Piece castlingP;
-    public Piece wking = new King('w', 3, 7), bking = new King('b', 3, 0);
-    
     public String winner = "";
+    public Piece wking = new King('w', 4, 7), bking = new King('b', 4, 0);
     public boolean gameEnded = false;
-
     public Gampanel() {
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
         setBackground(Color.black);
@@ -34,12 +31,10 @@ public class Gampanel extends JPanel implements Runnable {
         setPieces();
         copyPieces(pieces, simpieces);
     }
-
     public void launchGame() {
         gameThread = new Thread(this);
         gameThread.start();
     }
-
     public void trocarOsTurnos() {
         if (currentCollor == 'w') {
             currentCollor = 'b';
@@ -54,7 +49,6 @@ public class Gampanel extends JPanel implements Runnable {
         }
         activeP = null;
     }
-
     public void checkCastling() {
         if (castlingP != null) {
             if (castlingP.col == 0) {
@@ -66,7 +60,6 @@ public class Gampanel extends JPanel implements Runnable {
             castlingP.x = castlingP.getX(castlingP.col);
         }
     }
-
     public boolean canPromote() {
         if (activeP.type == Tipo.PAWN) {
             if ((currentCollor == 'w' && activeP.lin == 0) || (currentCollor == 'b' && activeP.lin == 7)) {
@@ -80,7 +73,6 @@ public class Gampanel extends JPanel implements Runnable {
         }
         return false;
     }
-
     public boolean isIllegal() {
         if (currentCollor == 'w') {
             for (Piece piece : simpieces) {
@@ -108,7 +100,6 @@ private synchronized boolean hasValidMoves(boolean checkIfKingIsSafe) {
                             int originalCol = piece.col;
                             int originalLin = piece.lin;
                             Piece originalTarget = piece.targetPiece;
-
                             // Simula o movimento
                             piece.col = col;
                             piece.lin = lin;
@@ -130,10 +121,7 @@ private synchronized boolean hasValidMoves(boolean checkIfKingIsSafe) {
         }
     }
     return false;
-}
-
-
-
+} 
     public boolean isCheckmate() {
         return isIllegal() && !hasValidMoves(true);
     }
@@ -143,8 +131,17 @@ private synchronized boolean hasValidMoves(boolean checkIfKingIsSafe) {
     }
 
     public void setPieces() {
-        wking = null; bking = null; 
-        wking = new King('w', 3, 7); bking = new King('b', 3, 0);
+    Metajogo= new char[][]{
+    {'r','n','b','q','k','b','n','r'},
+    {'p','p','p','p','p','p','p','p'},
+    {'O','O','O','O','O','O','O','O'},
+    {'O','O','O','O','O','O','O','O'},
+    {'O','O','O','O','O','O','O','O'},
+    {'O','O','O','O','O','O','O','O'},
+    {'P','P','P','P','P','P','P','P'},
+    {'R','N','B','Q','K','B','N','R'}}; 
+    wking = null; bking = null; 
+    wking = new King('w', 4, 7); bking = new King('b', 4, 0);
         for (int i = 0; i < 8; i++) {
             pieces.add(new Pawn('w', i, 6));
         }
@@ -154,9 +151,8 @@ private synchronized boolean hasValidMoves(boolean checkIfKingIsSafe) {
         pieces.add(new Knight('w', 6, 7));
         pieces.add(new Bishop('w', 2, 7));
         pieces.add(new Bishop('w', 5, 7));
-        pieces.add(new Queen('w', 4, 7));
+        pieces.add(new Queen('w', 3, 7));
         pieces.add(wking);
-
         // As pretas agora
         for (int i = 0; i < 8; i++) {
             pieces.add(new Pawn('b', i, 1));
@@ -167,17 +163,41 @@ private synchronized boolean hasValidMoves(boolean checkIfKingIsSafe) {
         pieces.add(new Knight('b', 6, 0));
         pieces.add(new Bishop('b', 2, 0));
         pieces.add(new Bishop('b', 5, 0));
-        pieces.add(new Queen('b', 4, 0));
+        pieces.add(new Queen('b', 3, 0));
         pieces.add(bking);
     }
-
     private void copyPieces(ArrayList<Piece> source, ArrayList<Piece> target) {
         target.clear();
         for (int i = 0; i < source.size(); i++) {
             target.add(source.get(i));
         }
     }
-
+      public static void updateMatrix(Piece P){
+        char move=' ';
+        if (P.color=='w'){
+            if (P.type==Tipo.KING) move='K';
+            if (P.type==Tipo.KNIGHT) move='N';
+            if (P.type==Tipo.BISHOP) move='B';
+            if (P.type==Tipo.ROOK) move='R';
+            if (P.type==Tipo.PAWN) move='P';
+            if (P.type==Tipo.QUEEN) move='Q';
+        }
+          if (P.color=='b'){
+            if (P.type==Tipo.KING) move='k';
+            if (P.type==Tipo.KNIGHT) move='n';
+            if (P.type==Tipo.BISHOP) move='b';
+            if (P.type==Tipo.ROOK) move='r';
+            if (P.type==Tipo.PAWN) move='p';
+            if (P.type==Tipo.QUEEN) move='q';
+       }
+        Metajogo[P.lin][P.col]=move;
+        Metajogo[P.prelin][P.precol]='O';
+        for (int i=0;i<8;i++){
+           for (int j=0; j<8;j++){
+              System.out.print(Metajogo[i][j]);}
+              System.out.println();
+        }
+      }
     @Override
     public void run() {
         // Game loop
@@ -197,43 +217,51 @@ private synchronized boolean hasValidMoves(boolean checkIfKingIsSafe) {
             }
         }
     }
+public synchronized void update() {
+    if (promotion) {
+        promoting();
+    } else {
+        if (isGameOver()) resetLoop(); // Evita atualizações se o jogo terminou
+          else if(currentCollor==vaschess.color){
+                makeAMove(vaschess.getTrueMove());
+                trocarOsTurnos();
+          }
 
-    public synchronized void update() {
-        if (promotion) {
-            promoting();
-        } else {
-            if (isGameOver()) resetLoop(); // Evita atualizações se o jogo terminou
-
-            if (mouse.precionado) {
+        // Lógica do jogador humano
+            else if (mouse.precionado) {
                 if (activeP == null) {
-          synchronized(simpieces) {for (Piece piece : simpieces) {
-                        if (piece.color == currentCollor &&
-                            piece.col == mouse.x / Board.SQUARE_SIZE &&
-                            piece.lin == mouse.y / Board.SQUARE_SIZE) {
-                            activeP = piece;
+                    synchronized (simpieces) {
+                        for (Piece piece : simpieces) {
+                            if (piece.color == currentCollor &&
+                                    piece.col == mouse.x / Board.SQUARE_SIZE &&
+                                    piece.lin == mouse.y / Board.SQUARE_SIZE) {
+                                activeP = piece;
+                            }
                         }
-                    }}
-                } else simulate();
-            }
-            if (!mouse.precionado) {
-                if (activeP != null) {
-                    if (movimentovalido) {
-                        copyPieces(simpieces, pieces);
-                        activeP.updatePosition();
-                        if (castlingP != null) castlingP.updatePosition();
-                        if (canPromote()) {
-                            promotion = true;
-                        } else trocarOsTurnos();
-                    } else {
-                        copyPieces(pieces, simpieces);
-                        activeP.resetPosition();
                     }
-                    if (!promotion) activeP = null;
+                  } else {
+                      simulate();
+                  }
+             }
+
+        if (!mouse.precionado) {
+            if (activeP != null) {
+                if (movimentovalido) {
+                    copyPieces(simpieces, pieces);
+                    activeP.updatePosition();
+                    if (castlingP != null) castlingP.updatePosition();
+                    if (canPromote()) {
+                        promotion = true;
+                    } else trocarOsTurnos();
+                } else {
+                    copyPieces(pieces, simpieces);
+                    activeP.resetPosition();
                 }
+                if (!promotion) activeP = null;
             }
         }
     }
-
+}
     private void simulate() {
         copyPieces(pieces, simpieces);
 
@@ -259,8 +287,23 @@ private synchronized boolean hasValidMoves(boolean checkIfKingIsSafe) {
             }
         }
     }
+       private void makeAMove (Move move){
+            for(Piece piece:pieces){
+               if(piece.col==move.precol&&piece.lin==move.prelin){
+                 piece.canMove(move.col,move.lin);
+                  if(piece.targetPiece!= null) pieces.remove(piece.targetPiece.getIndex());
+                   piece.col = move.col;
+                   piece.lin = move.lin;
+                   piece.x = piece.getX(piece.col);
+                   piece.y = piece.getY(piece.lin);
+                   piece.updatePosition();
+             }
+          }
+                
+        }
 
-    public void promoting() {
+
+    private void promoting() {
         if (mouse.precionado) {
             for (Piece piece : promoPieces) {
                 if (piece.col == mouse.x / Board.SQUARE_SIZE && piece.lin == mouse.y / Board.SQUARE_SIZE) {
