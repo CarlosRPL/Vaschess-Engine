@@ -8,6 +8,7 @@ public class Bishop extends Piece {
         else
             image=getImage("/imagem/bbispo");
     }
+    //mudar aqui tbm né
     public boolean canMove(int targetcol,int targetlin){
         if ((precol+prelin==targetcol+targetlin)||Math.abs(targetcol-precol)==Math.abs(targetlin-prelin)) {
             
@@ -18,3 +19,4 @@ public class Bishop extends Piece {
         return false;}
   
 }
+
